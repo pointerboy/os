@@ -12,7 +12,7 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    vga_driver::print("Rust OS ...");
+    display_println!("Rust OS! ... ");
 
     loop {}
 }
