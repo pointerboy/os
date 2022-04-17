@@ -130,14 +130,6 @@ impl fmt::Write for Writer {
     }
 }
 
-pub fn print(s: &str) {
-    use core::fmt::Write;
-    let mut writer = Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-}
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
