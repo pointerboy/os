@@ -2,6 +2,7 @@
 #![no_main]
 
 use core::panic::PanicInfo;
+use os::init;
 
 mod vga_driver;
 
@@ -14,5 +15,10 @@ fn panic(_info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     display_println!("Rust OS! ... ");
 
+    init();
+
+    x86_64::instructions::interrupts::int3();
+
+    display_println!("It did not crash");
     loop {}
 }
