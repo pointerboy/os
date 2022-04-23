@@ -1,5 +1,5 @@
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
-use crate::{gdt, display_println};
+use crate::{gdt, display_println, display_print};
 
 use pic8259::ChainedPics;
 use spin;
@@ -55,12 +55,29 @@ pub fn init_idt(){
 extern "x86-interrupt" fn keyboard_handler(
     _stack_frame: InterruptStackFrame){
 
+    use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+    use spin::Mutex;
     use x86_64::instructions::port::Port;
 
-    let mut port = Port::new(0x60);
-    let scancode: u8 = unsafe { port.read() };
+    lazy_static!{
+        static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+            Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1,
+                    HandleControl::Ignore)
+            );
+    }
 
-    display_println!("{}", scancode);
+    let mut keyboard = KEYBOARD.lock();
+    let mut port = Port::new(0x60);
+
+    let scancode: u8 = unsafe {port.read()};
+    if let Ok(Some(key_event)) = keyboard.add_byte(scancode){
+        if let Some(key) = keyboard.process_keyevent(key_event){
+            match key{
+                DecodedKey::Unicode(character) => display_print!("{}", character),
+                DecodedKey::RawKey(key) => display_print!("{:?}", key),
+            }
+        }
+    }
 
     unsafe{
         PICS.lock()
