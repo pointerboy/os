@@ -8,7 +8,7 @@ mod vga_driver;
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+    os::hlt_loop();
 }
 
 #[no_mangle]
@@ -17,8 +17,6 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
-    x86_64::instructions::interrupts::int3();
-
     display_println!("It did not crash");
-    loop {}
+    os::hlt_loop();
 }
